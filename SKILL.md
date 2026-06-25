@@ -39,14 +39,14 @@ These facts override any contradicting guidance elsewhere in this skill or its r
 
 ### Enabling `export_html`
 
-`export_html` lives on the Pencil **Desktop** MCP server (1.1.65+), not the `@pencil.dev/cli` MCP binary. To use it, your agent's `pencil` MCP server must point at the Desktop app's binary, not the CLI's. This skill ships a cross-platform resolver for that: [`scripts/pencil-mcp-desktop.sh`](scripts/pencil-mcp-desktop.sh) (Linux + macOS, arch-aware; finds the binary by name so it survives Pencil updates).
+`export_html` lives on the Pencil **Desktop** MCP server (1.1.65+), not the `@pencil.dev/cli` MCP binary. To use it, your agent's `pencil` MCP server must point at the Desktop app's binary, not the CLI's. This skill ships a cross-platform resolver for that: [`scripts/pencil-server.sh`](scripts/pencil-server.sh) (Linux + macOS, arch-aware; finds the binary by name so it survives Pencil updates).
 
 Wire it as the `pencil` MCP server in your agent's MCP config, using the **absolute** path to the script inside this skill directory:
 
 ```json
 "pencil": {
   "command": "sh",
-  "args": ["<absolute-path-to-this-skill>/scripts/pencil-mcp-desktop.sh", "--app", "desktop"],
+  "args": ["<absolute-path-to-this-skill>/scripts/pencil-server.sh", "--app", "desktop"],
   "directTools": true
 }
 ```

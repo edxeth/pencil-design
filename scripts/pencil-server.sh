@@ -1,5 +1,5 @@
 #!/bin/sh
-# pencil-mcp-desktop.sh — resolve and run the Pencil Desktop app's bundled MCP server.
+# pencil-server.sh — resolve and run the Pencil Desktop app's bundled MCP server.
 #
 # Why this exists: `export_html` (and the live-editing MCP surface) ship in the
 # Pencil DESKTOP app, not in the `@pencil.dev/cli` npm package (which lags behind).
@@ -9,7 +9,7 @@
 # Wire it as your MCP server, e.g. in your agent's MCP config:
 #   "pencil": {
 #     "command": "sh",
-#     "args": ["<absolute path to this skill>/scripts/pencil-mcp-desktop.sh", "--app", "desktop"],
+#     "args": ["<absolute path to this skill>/scripts/pencil-server.sh", "--app", "desktop"],
 #     "directTools": true
 #   }
 #
@@ -41,13 +41,13 @@ case "$(uname -s)" in
     done
     ;;
   *)
-    echo "pencil-mcp-desktop: unsupported OS: $(uname -s)" >&2
+    echo "pencil-server: unsupported OS: $(uname -s)" >&2
     exit 1
     ;;
 esac
 
 if [ -z "${BIN:-}" ] || [ ! -x "$BIN" ]; then
-  echo "pencil-mcp-desktop: could not find Pencil Desktop's MCP binary ('$NAME')." >&2
+  echo "pencil-server: could not find Pencil Desktop's MCP binary ('$NAME')." >&2
   echo "  Is Pencil Desktop installed and running? (Linux: the AppImage must be open;" >&2
   echo "   macOS: Pencil.app must be present.)" >&2
   exit 1
