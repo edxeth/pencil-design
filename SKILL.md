@@ -16,6 +16,7 @@ permissions:
     - pencil:get_variables
     - pencil:set_variables
     - pencil:export_nodes
+    - pencil:export_html
   shell: none
   filesystem: project-only  # reads ./design-system/ if present; assets/design-system/ holds optional templates for users to adapt
   network: none
@@ -28,7 +29,7 @@ permissions:
 These facts override any contradicting guidance elsewhere in this skill or its references.
 
 - **Use full op names in `batch_design`.** The server exposes `Insert`, `Copy`, `Replace`, `Update`, `Generate`, `Delete`, `Move`, `FindEmptySpace`. Single-letter aliases (`I`, `C`, `R`, `U`, `G`, `D`, `M`) are not defined and fail with `ReferenceError: 'I' is not defined`. Always write the full name.
-- **Tools available.** The Pencil MCP server exposes nine tools: `get_editor_state`, `get_guidelines`, `batch_get`, `batch_design`, `snapshot_layout`, `get_screenshot`, `get_variables`, `set_variables`, `export_nodes`. `open_document`, `find_empty_space_on_canvas`, `search_all_unique_properties`, and `replace_all_matching_properties` are not exposed and will error — don't call them.
+- **Tools available.** The Pencil MCP server exposes `get_editor_state`, `get_guidelines`, `batch_get`, `batch_design`, `snapshot_layout`, `get_screenshot`, `get_variables`, `export_nodes`, plus `set_variables` (on the `@pencil.dev/cli` MCP binary) or `export_html` (on the Pencil Desktop MCP server, 1.1.65+). Availability of those last two differs between the two servers — run `tools/list` once if you're unsure which you're connected to. `open_document`, `find_empty_space_on_canvas`, `search_all_unique_properties`, and `replace_all_matching_properties` are not exposed on either and will error — don't call them.
 - **`filePath` is accepted but ignored.** Every operation runs against the active document. There is no MCP call to target or switch files; the user must focus the intended file in Pencil Desktop.
 - **One active document at a time.** Multiple concurrent connections coexist and all edit the same active document (collaborative-canvas). True multi-file concurrency — different agents on different files at once — is not supported; work on multiple files sequentially.
 - **Prefer live editing.** Default to editing the active Pencil Desktop canvas in small chunks so the user can watch the design take shape. Use headless generation only when explicitly requested.

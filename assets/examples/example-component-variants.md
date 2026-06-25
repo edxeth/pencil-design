@@ -40,7 +40,7 @@ Per `references/composition-patterns.md` § Component status workflow: ship the 
 Open the library, then create the parent frame that anchors the family. The parent isn't instantiated directly; it's the conceptual root that the variants hang off.
 
 ```
-open_document({ path: "./design-system.lib.pen" })
+(no open_document tool — user opens/creates the file in Pencil Desktop so it is the active document)
 Update("doc", { themes: { state: ["default", "hover", "focus", "pressed", "disabled", "loading"] } })
 
 button=Insert("doc", {

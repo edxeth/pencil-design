@@ -41,7 +41,7 @@ Components: `Input`, `ButtonPrimary`, `ButtonSecondary`, `LinkText`, `Checkbox`.
 ## Step 4.5: Open document
 
 ```
-open_document({ path: "new" })
+(no open_document tool — user opens/creates the file in Pencil Desktop so it is the active document)
 ```
 
 Note the document root id; call it `doc`. Declare the mode axis and library import:

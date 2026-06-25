@@ -53,7 +53,7 @@ Library has `IconButton`, `ButtonPrimary`, `Input`, `TabBarItem`, `Toast`. No `S
 Since no `.pen` is open:
 
 ```
-open_document({ path: "new" })
+(no open_document tool — user opens/creates the file in Pencil Desktop so it is the active document)
 ```
 
 Note the document root id, which we'll call `doc`. Add the library import:

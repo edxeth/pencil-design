@@ -233,6 +233,18 @@ For batch generation, point at a tasks file:
 - **Real-time multi-agent edits.** Two CLI runs hitting the same `.pen` race; the second silently overwrites the first.
 - **`get_editor_state`, `find_empty_space_on_canvas`, `get_screenshot` against a live canvas.** The CLI's interactive mode exposes these against the file, but the file is a static snapshot — there's no canvas to find space on, no live screenshot.
 - **Interactive design exploration.** The CLI's agent mode is one-shot. Iteration requires re-running.
+- **`export_html`.** The CLI's bundled MCP binary (0.2.7, the latest published) does **not** expose `export_html`. That tool lives on the **Pencil Desktop MCP server (1.1.65+)**. To export HTML via MCP, connect through the Desktop app's MCP server, not the CLI binary. (Inverse: the Desktop MCP server currently omits `set_variables`; the CLI binary exposes it.)
+
+## Tool availability: CLI binary vs Desktop MCP server
+
+The two Pencil MCP surfaces carry slightly different tool sets. Call `tools/list` on whichever you're connected to rather than assuming.
+
+| Tool | `@pencil.dev/cli` MCP binary (0.2.7) | Pencil Desktop MCP server (1.1.65+) |
+|------|------|------|
+| `get_editor_state`, `get_guidelines`, `batch_get`, `batch_design`, `snapshot_layout`, `get_screenshot`, `get_variables`, `export_nodes` | ✓ | ✓ |
+| `set_variables` | ✓ | not exposed |
+| `export_html` | not exposed | ✓ |
+
 
 ## What MCP can't do
 

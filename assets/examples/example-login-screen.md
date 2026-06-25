@@ -41,7 +41,7 @@ Components: `Input`, `ButtonPrimary`, `LinkText`. Token list includes: `$surface
 ## Step 4.5: Open document, declare mode axis and imports
 
 ```
-open_document({ path: "new" })
+(no open_document tool — user opens/creates the file in Pencil Desktop so it is the active document)
 ```
 
 The server returns the document root id; call it `doc`. Declare the mode axis and library import before any frames land:

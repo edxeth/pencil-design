@@ -2,7 +2,7 @@
 
 > ## Tool availability
 >
-> The Pencil MCP server exposes nine tools: `get_editor_state`, `get_guidelines`, `batch_get`, `batch_design`, `snapshot_layout`, `get_screenshot`, `get_variables`, `set_variables`, `export_nodes`. The tools marked **not available** below (`open_document`, `find_empty_space_on_canvas`, `search_all_unique_properties`, `replace_all_matching_properties`) are not exposed and will error — use the alternatives noted.
+> The Pencil MCP server exposes `get_editor_state`, `get_guidelines`, `batch_get`, `batch_design`, `snapshot_layout`, `get_screenshot`, `get_variables`, `export_nodes`, plus `set_variables` (on the `@pencil.dev/cli` MCP binary) or `export_html` (on the Pencil Desktop MCP server, 1.1.65+). Run `tools/list` if unsure which server you're on. The tools marked **not available** below (`open_document`, `find_empty_space_on_canvas`, `search_all_unique_properties`, `replace_all_matching_properties`) are not exposed on either and will error — use the alternatives noted.
 >
 > `filePath` is accepted by several tools but ignored: operations always target the active document. There is no MCP call to open or switch files; the user must focus the intended file in Pencil Desktop.
 
@@ -22,7 +22,7 @@ For each tool: a one-line purpose, a "when to reach for it" line, a "when not to
 | Reference | `get_guidelines` |
 | Read / inspect | `batch_get`, `get_variables`, `snapshot_layout`, `get_screenshot` |
 | Write | `batch_design`, `set_variables` |
-| Export | `export_nodes` |
+| Export | `export_nodes`, `export_html` |
 
 > (On this build there are no `open_document`, `find_empty_space_on_canvas`, `search_all_unique_properties`, or `replace_all_matching_properties` tools — see the correction banner at the top of this file.)
 
@@ -46,24 +46,9 @@ Pass `include_schema: true` on the **first** call of every conversation. The ser
 
 **Pitfalls.** A succeeding call with no active document is *not* a failure, it just means the user hasn't opened a `.pen`. Branch into the "no document open" failure path (SKILL.md § Failure modes §2).
 
-### `open_document`
+### `open_document` — not available
 
-**Purpose.** Open an existing `.pen` or create a new one.
-
-**Reach for it.** When `get_editor_state` reports no active document and the user has confirmed they want one. Use `"new"` for greenfield, an absolute or relative path for an existing file.
-
-**Don't reach for it** if the user already has a `.pen` open in the editor, operate on that one. Opening a second document silently switches the editor's focus.
-
-**Worked call.**
-
-```
-open_document()
-open_document({ path: "/abs/path/to/screens/onboarding.pen" })
-```
-
-Omit `path` entirely to create a new document. Pass an absolute path to open an existing `.pen`. The next `get_editor_state` will reflect the change.
-
-**Pitfalls.** The path must be absolute when specified, relative paths are resolved against the host's working directory and that may not be the user's repo root. There is no `path: "new"` magic value; just leave the argument off. Don't open a second document while the user has one focused, it silently switches the editor.
+This tool does **not exist** on the Pencil MCP server. There is no MCP call to open, create, or switch documents. To work on a specific file, have the user open or create it in Pencil Desktop so it becomes the active document, then operate on it with the other tools. `filePath` is accepted by several tools but ignored — it does not switch the active document.
 
 ## Reference
 
@@ -460,7 +445,43 @@ export_nodes({
 - `scale: 2` is the default for retina-quality assets. Bump to `3` only when explicitly required (App Store screenshots, 3× phone density).
 - `quality` only takes effect for JPEG and WEBP. Setting it on PNG or PDF is silently ignored.
 
-## Composite recipes
+### `export_html`
+
+**Purpose.** Convert canvas nodes to clean HTML on disk — no LLM involved, takes a second or two. The dev-handoff path when the user wants code, not an image.
+
+**Availability.** Pencil Desktop MCP server, version 1.1.65+. Not present on the `@pencil.dev/cli` MCP binary (0.2.7). If `export_html` is missing, you're on the CLI server — fall back to `export_nodes` for an image, or tell the user the Desktop MCP server is needed for HTML.
+
+**Reach for it.** When the user asks to "export as HTML", "give me the code", "turn this into a web page", or wants to hand a design to engineering as markup rather than a screenshot. Also useful when you want to feed the design to an LLM later as structured HTML (with layer names as `data-*` attributes for reference).
+
+**Don't reach for it** for a quick visual check — that's `get_screenshot`. And don't use it when the user wants image assets (PNG/PDF); that's `export_nodes`.
+
+**Worked call.**
+
+```
+export_html({
+  nodeIds: ["HomePage_Desktop"],
+  outputPath: "./design/exports/home.html",
+  format: "html-tailwind",
+  includeLayerNames: true,
+  includeHtmlScaffold: true
+})
+```
+
+**Required params:** `nodeIds`, `outputPath` (a file path, not a directory — unlike `export_nodes`' `outputDir`). `filePath` is listed required in the schema but is ignored like on every other tool.
+
+**Optional params.**
+
+- `format` (default `html-tailwind`): `html-tailwind` (Tailwind utility classes) or `html-css` (plain CSS). Pick Tailwind if the target stack uses it; pick `html-css` for framework-agnostic markup.
+- `includeHtmlScaffold` (default `true`): wraps the output in a full `<!DOCTYPE html>` document. Set `false` to get a fragment you can drop into an existing page.
+- `includeLayerNames` (default `true`): emits each layer's name as a `data-name` (or similar) attribute — keep this on when the HTML will be read by an LLM or used as a reference map.
+- `includeLayerIds` (default `false`): also emit internal layer IDs as data attributes. Useful for stitching exported HTML back to specific nodes; leave off for clean production output.
+
+**Pitfalls.**
+
+- `outputPath` is a file path (single HTML file). One file is written per call regardless of how many `nodeIds` you pass — confirm with the user if they expect one file per node.
+- Images in the design are handled per the build's default (embedded vs referenced). If the user cares, tell them the current behaviour and let them confirm.
+- The output is a static structural export — it does not preserve interactions, component instances collapse to their rendered markup, and Pencil's flexbox layout maps to CSS/Tailwind approximations. Treat it as a high-fidelity starting point, not production-ready code.
+
 
 ### Token audit & cleanup
 
@@ -494,7 +515,7 @@ The `search` → review → `replace` workflow:
 
 Setting up a brand-new `.pen`:
 
-1. `open_document({ path: "new" })` — get a fresh doc id.
+1. Have the user create a new `.pen` in Pencil Desktop (File → New) so it's the active document — there is no `open_document` MCP tool.
 2. `Update(document, { themes: { mode: ["light", "dark"] } })` via `batch_design` — declare the theme axis first.
 3. `set_variables({ variables: { ... }, replace: false })` — declare the full token suite.
 4. First `batch_design` — page frame + skeleton (≤10 ops).
@@ -535,7 +556,7 @@ Order roughly cheapest → most expensive in tokens / context:
 | `batch_get` | Full node JSON | Medium → large with depth and `resolveInstances` |
 | `get_editor_state` | Document/selection metadata | Small (large with `include_schema: true`) |
 | `get_guidelines` | Markdown text | Medium per category |
-| `open_document` | Doc id + metadata | Small |
+| `open_document` | *(not available — user opens/creates the file in Pencil Desktop)* | — |
 | `export_nodes` | File paths written | Small (the files themselves are on disk) |
 | `get_screenshot` | PNG image | **Expensive**, image input to the model |
 
