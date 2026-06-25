@@ -37,6 +37,22 @@ These facts override any contradicting guidance elsewhere in this skill or its r
 - **Trust `get_editor_state`, not the CLI banner.** `pencil interactive --app desktop --in <file>` does not switch the file Desktop has open; `get_editor_state` reports the true active document.
 - **The CLI parser ignores unknown flags silently.** Only the flags in `pencil --help` are real. Export with `pencil --in in.pen --export out.png --export-scale 2`.
 
+### Enabling `export_html`
+
+`export_html` lives on the Pencil **Desktop** MCP server (1.1.65+), not the `@pencil.dev/cli` MCP binary. To use it, your agent's `pencil` MCP server must point at the Desktop app's binary, not the CLI's. This skill ships a cross-platform resolver for that: [`scripts/pencil-mcp-desktop.sh`](scripts/pencil-mcp-desktop.sh) (Linux + macOS, arch-aware; finds the binary by name so it survives Pencil updates).
+
+Wire it as the `pencil` MCP server in your agent's MCP config, using the **absolute** path to the script inside this skill directory:
+
+```json
+"pencil": {
+  "command": "sh",
+  "args": ["<absolute-path-to-this-skill>/scripts/pencil-mcp-desktop.sh", "--app", "desktop"],
+  "directTools": true
+}
+```
+
+(In Pi that file is `~/.pi/agent/mcp.json`.) Restart your agent after editing. Requires Pencil Desktop to be running. If `export_html` is still missing, you're on the CLI binary — re-point to the resolver.
+
 ## Mental model: what .pen files are
 
 `.pen` files are JSON. They conform to a [published schema](https://docs.pencil.dev/for-developers/the-pen-format), `Document` with `version`, optional `themes`, `imports`, `variables`, and a required `children` array. Every node extends an `Entity` with a unique `id` (no slashes), a `type`, and an optional `name`. Pencil itself describes them as "version-controllable, works with Git like any code file."
